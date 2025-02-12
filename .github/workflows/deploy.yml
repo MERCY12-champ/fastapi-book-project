@@ -32,7 +32,7 @@ jobs:
 
       - name: Deploy to AWS
         run: |
-          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@your-server-ip << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@16.171.160.113 << 'EOF'
           # Install Docker
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
