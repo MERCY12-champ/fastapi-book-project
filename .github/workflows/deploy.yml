@@ -32,24 +32,32 @@ jobs:
 
       - name: Deploy to AWS
         run: |
-          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@16.171.160.113 << 'EOF'
-          # Install Docker
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          sudo apt-get update
-          sudo apt-get install -y docker-ce
-          sudo systemctl start docker
-          sudo systemctl enable docker
+          # Write the SSH private key from the secret to a temporary file
+          echo "$SSH_PRIVATE_KEY" > /tmp/private_key
+          chmod 600 /tmp/private_key
+          # Connect via SSH and run deployment commands
+          ssh -o StrictHostKeyChecking=no -i /tmp/private_key ubuntu@16.171.160.113 << 'EOF'
+            # Install Docker
+            sudo apt-get update
+            sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            sudo apt-get install -y docker-ce
+            sudo systemctl start docker
+            sudo systemctl enable docker
 
-          # Install Docker Compose
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+            # Install Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
 
-          # Pull and run the Docker image with Nginx
-          docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app
-          docker run -d -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+            # Stop and remove any existing container named fastapi-app
+            docker stop fastapi-app || true
+            docker rm fastapi-app || true
+
+            # Pull and run the new Docker image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+            docker run -d -p 8000:8000 --name fastapi-app ${{ secrets.DOCKER_USERNAME }}/fastapi-app
           EOF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
