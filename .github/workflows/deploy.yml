@@ -32,7 +32,7 @@ jobs:
 
       - name: Deploy to AWS
         run: |
-          # Write the SSH private key from the secret to a temporary file
+          # Write the SSH private key to a temporary file
           echo "$SSH_PRIVATE_KEY" > /tmp/private_key
           chmod 600 /tmp/private_key
           # Connect via SSH and run deployment commands
@@ -52,12 +52,12 @@ jobs:
             sudo chmod +x /usr/local/bin/docker-compose
 
             # Stop and remove any existing container named fastapi-app
-            docker stop fastapi-app || true
-            docker rm fastapi-app || true
+            sudo docker stop fastapi-app || true
+            sudo docker rm fastapi-app || true
 
-            # Pull and run the new Docker image
-            docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app
-            docker run -d -p 8000:8000 --name fastapi-app ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+            # Pull and run the Docker image
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+            sudo docker run -d -p 8000:8000 --name fastapi-app ${{ secrets.DOCKER_USERNAME }}/fastapi-app
           EOF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
