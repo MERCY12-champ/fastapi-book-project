@@ -51,13 +51,15 @@ jobs:
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
 
-            # Stop and remove any existing container named fastapi-app
-            sudo docker stop fastapi-app || true
-            sudo docker rm fastapi-app || true
+            ...
+          # Stop and remove any existing container named fastapi-app
+          sudo docker stop fastapi-app || true
+          sudo docker rm fastapi-app || true
 
-            # Pull and run the Docker image
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app
-            sudo docker run -d -p 8000:8000 --name fastapi-app ${{ secrets.DOCKER_USERNAME }}/fastapi-app
-          EOF
+          # Pull and run the Docker image with port mapping 80:80
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+          sudo docker run -d -p 80:80 --name fastapi-app ${{ secrets.DOCKER_USERNAME }}/fastapi-app
+...
+
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
